@@ -22,6 +22,9 @@ fi
 PGBOUNCER_DIR=/app/vendor/pgbouncer
 mkdir -p ${PGBOUNCER_DIR}
 
+echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
+echo "${INTERNAL_TLS_CA}" > /app/vendor/pgbouncer/pgbouncer_ca.crt
+echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
 
 cat >> ${PGBOUNCER_DIR}/pgbouncer.ini << EOFEOF
 [pgbouncer]
@@ -89,15 +92,15 @@ then
 #  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer.crt
 #  echo $CLIENT_TLS_CRT_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer.crt
 #  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer.crt
-   echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
+##   echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
 #  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
 #  echo $CLIENT_TLS_CA_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
 #  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-   echo "${INTERNAL_TLS_CA}" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
+##   echo "${INTERNAL_TLS_CA}" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
 #  echo -e "-----BEGIN RSA PRIVATE KEY-----" > ${PGBOUNCER_DIR}/pgbouncer.key
 #  echo $CLIENT_TLS_KEY_FILE | tr ' ' '\n' | sed '1,4d' | head -n -4 >> ${PGBOUNCER_DIR}/pgbouncer.key
 #  echo -e "-----END RSA PRIVATE KEY-----"  >> ${PGBOUNCER_DIR}/pgbouncer.key
-   echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
+##   echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
 
   sed -i '/^server_tls_sslmode =.*/c\
 client_tls_sslmode = require \
