@@ -9,9 +9,6 @@ n=1
 # we need root.crt , certificate and key of pgbouncer on place for verifying, for handling secrets in security compliant manner 
 # they will be encrypted and come from SEO
 
-#CLIENT_TLS_KEY_FILE=${CLIENT_TLS_KEY_FILE:-$INTERNAL_TLS_KEY}
-#CLIENT_TLS_CRT_FILE=${CLIENT_TLS_CRT_FILE:-$INTERNAL_TLS_CRT}
-#CLIENT_TLS_CA_FILE=${CLIENT_TLS_CA_FILE:-$INTERNAL_TLS_CA}
 
 # if the SERVER_RESET_QUERY and pool mode is session, pgbouncer recommends DISCARD ALL be the default
 # http://pgbouncer.projects.pgfoundry.org/doc/faq.html#_what_should_my_server_reset_query_be
@@ -21,10 +18,6 @@ fi
 
 PGBOUNCER_DIR=/app/vendor/pgbouncer
 mkdir -p ${PGBOUNCER_DIR}
-
-echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
-echo "${INTERNAL_TLS_CA}" > /app/vendor/pgbouncer/pgbouncer_ca.crt
-echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
 
 cat >> ${PGBOUNCER_DIR}/pgbouncer.ini << EOFEOF
 [pgbouncer]
@@ -87,20 +80,11 @@ EOFEOF
 # if all of certs and key are present and also adjust the certificates' formate 
 # from outputs of envrionment variables
 #
-if [ -n "${INTERNAL_TLS_CRT}" ] && [ -n "${INTERNAL_TLS_KEY}" ] && [ -n "${INTERNAL_TLS_CA}" ]
+if [ -n "${INTERNAL_TLS_CRT}" ] && [ -n "${INTERNAL_TLS_KEY}" ] && [ -n "${INTERNAL_CA_CRT}" ]
 then 
-#  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer.crt
-#  echo $CLIENT_TLS_CRT_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer.crt
-#  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer.crt
-##   echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
-#  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-#  echo $CLIENT_TLS_CA_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-#  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-##   echo "${INTERNAL_TLS_CA}" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-#  echo -e "-----BEGIN RSA PRIVATE KEY-----" > ${PGBOUNCER_DIR}/pgbouncer.key
-#  echo $CLIENT_TLS_KEY_FILE | tr ' ' '\n' | sed '1,4d' | head -n -4 >> ${PGBOUNCER_DIR}/pgbouncer.key
-#  echo -e "-----END RSA PRIVATE KEY-----"  >> ${PGBOUNCER_DIR}/pgbouncer.key
-##   echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
+   echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
+   echo "${INTERNAL_CA_CRT}" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
+   echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
 
   sed -i '/^server_tls_sslmode =.*/c\
 client_tls_sslmode = require \
