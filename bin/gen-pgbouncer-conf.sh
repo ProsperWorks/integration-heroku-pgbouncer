@@ -97,7 +97,7 @@ then
 #  echo -e "-----BEGIN RSA PRIVATE KEY-----" > ${PGBOUNCER_DIR}/pgbouncer.key
 #  echo $CLIENT_TLS_KEY_FILE | tr ' ' '\n' | sed '1,4d' | head -n -4 >> ${PGBOUNCER_DIR}/pgbouncer.key
 #  echo -e "-----END RSA PRIVATE KEY-----"  >> ${PGBOUNCER_DIR}/pgbouncer.key
-   echo "${INTERNAL_TLS_KEY}" > ${PGBOU
+   echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
 
   sed -i '/^server_tls_sslmode =.*/c\
 client_tls_sslmode = require \
