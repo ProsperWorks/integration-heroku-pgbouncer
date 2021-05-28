@@ -84,20 +84,21 @@ EOFEOF
 # if all of certs and key are present and also adjust the certificates' formate 
 # from outputs of envrionment variables
 #
-if [ -n "${CLIENT_TLS_KEY_FILE}" ] && [ -n "${CLIENT_TLS_CRT_FILE}" ] && [ -n "${CLIENT_TLS_CA_FILE}" ]
+if [ -n "${INTERNAL_TLS_CRT}" ] && [ -n "${INTERNAL_TLS_KEY}" ] && [ -n "${INTERNAL_TLS_CA}" ]
 then 
-  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer.crt
-  echo $CLIENT_TLS_CRT_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer.crt
-  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer.crt
-
-  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-  echo $CLIENT_TLS_CA_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-
-  echo -e "-----BEGIN RSA PRIVATE KEY-----" > ${PGBOUNCER_DIR}/pgbouncer.key
-  echo $CLIENT_TLS_KEY_FILE | tr ' ' '\n' | sed '1,4d' | head -n -4 >> ${PGBOUNCER_DIR}/pgbouncer.key
-  echo -e "-----END RSA PRIVATE KEY-----"  >> ${PGBOUNCER_DIR}/pgbouncer.key
-
+#  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer.crt
+#  echo $CLIENT_TLS_CRT_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer.crt
+#  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer.crt
+   echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
+#  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
+#  echo $CLIENT_TLS_CA_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
+#  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
+   echo "${INTERNAL_TLS_CA}" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
+#  echo -e "-----BEGIN RSA PRIVATE KEY-----" > ${PGBOUNCER_DIR}/pgbouncer.key
+#  echo $CLIENT_TLS_KEY_FILE | tr ' ' '\n' | sed '1,4d' | head -n -4 >> ${PGBOUNCER_DIR}/pgbouncer.key
+#  echo -e "-----END RSA PRIVATE KEY-----"  >> ${PGBOUNCER_DIR}/pgbouncer.key
+   echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
+   
   sed -i '/^server_tls_sslmode =.*/c\
 client_tls_sslmode = require \
 client_tls_protocols = secure \
