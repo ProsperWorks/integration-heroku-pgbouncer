@@ -5,14 +5,6 @@ POOL_MODE=${PGBOUNCER_POOL_MODE:-transaction}
 SERVER_RESET_QUERY=${PGBOUNCER_SERVER_RESET_QUERY}
 n=1
 
-# add TLS configuration: for client side of pgbouncer will be "require", for server side of pgbouncer will be "verify-ca". 
-# we need root.crt , certificate and key of pgbouncer on place for verifying, for handling secrets in security compliant manner 
-# they will be encrypted and come from SEO
-
-#CLIENT_TLS_KEY_FILE=${CLIENT_TLS_KEY_FILE:-$INTERNAL_TLS_KEY}
-#CLIENT_TLS_CRT_FILE=${CLIENT_TLS_CRT_FILE:-$INTERNAL_TLS_CRT}
-#CLIENT_TLS_CA_FILE=${CLIENT_TLS_CA_FILE:-$INTERNAL_TLS_CA}
-
 # if the SERVER_RESET_QUERY and pool mode is session, pgbouncer recommends DISCARD ALL be the default
 # http://pgbouncer.projects.pgfoundry.org/doc/faq.html#_what_should_my_server_reset_query_be
 if [ -z "${SERVER_RESET_QUERY}" ] &&  [ "$POOL_MODE" == "session" ]; then
@@ -22,22 +14,15 @@ fi
 PGBOUNCER_DIR=/app/vendor/pgbouncer
 mkdir -p ${PGBOUNCER_DIR}
 
-echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
-echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
-echo "${INTERNAL_TLS_CA}" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-
 cat >> ${PGBOUNCER_DIR}/pgbouncer.ini << EOFEOF
 [pgbouncer]
 listen_addr = ${PGBOUNCER_LISTEN_ADDR:-127.0.0.1}
 listen_port = 6000
 auth_type = md5
 auth_file = ${PGBOUNCER_DIR}/users.txt
-
 server_tls_sslmode = prefer
 server_tls_protocols = secure
 server_tls_ciphers = HIGH:!ADH:!AECDH:!LOW:!EXP:!MD5:!3DES:!SRP:!PSK:@STRENGTH
-
-
 ; When server connection is released back to pool:
 ;   session      - after client disconnects
 ;   transaction  - after transaction finishes
@@ -58,7 +43,6 @@ log_pooler_errors = ${PGBOUNCER_LOG_POOLER_ERRORS:-1}
 stats_period = ${PGBOUNCER_STATS_PERIOD:-60}
 ignore_startup_parameters = ${PGBOUNCER_IGNORE_STARTUP_PARAMETERS}
 query_wait_timeout = ${PGBOUNCER_QUERY_WAIT_TIMEOUT:-120}
-
 ; Low-level network settings, defaults as per pgbouncer:
 ;
 ;   https://pgbouncer.github.io/config.html#low-level-network-settings
@@ -83,24 +67,16 @@ tcp_keepidle = ${PGBOUNCER_TCP_KEEPIDLE:-7200}
 tcp_keepintvl = ${PGBOUNCER_TCP_KEEPINTVL:-75}
 EOFEOF
 
-# add certificates, key to pgbouncer.ini and change sslmode 
-# if all of certs and key are present and also adjust the certificates' formate 
-# from outputs of envrionment variables
+# add TLS configuration: for client side of pgbouncer will be "require", for server side of pgbouncer will be "verify-ca". 
+# we need root.crt , certificate and key of pgbouncer on place to verify, in order to handle secrets in security compliant manner 
+# they will be encrypted and come from SEO;
+# add certificates, key and change sslmode of pgbouncer.ini if all of certs and key are presented
 #
-#if [ -n "${INTERNAL_TLS_CRT}" ] && [ -n "${INTERNAL_TLS_KEY}" ] && [ -n "${INTERNAL_TLS_CA}" ]
-#then 
-#  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer.crt
-#  echo $CLIENT_TLS_CRT_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer.crt
-#  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer.crt
-##   echo "${CLIENT_TLS_CRT_FILE}" > ${PGBOUNCER_DIR}/pgbouncer.crt
-#  echo -e "-----BEGIN CERTIFICATE-----" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-#  echo $CLIENT_TLS_CA_FILE | tr ' ' '\n' | sed '1,2d' | head -n -2 >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-#  echo -e "-----END CERTIFICATE-----"  >> ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-##   echo "${CLIENT_TLS_CA_FILE}" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
-#  echo -e "-----BEGIN RSA PRIVATE KEY-----" > ${PGBOUNCER_DIR}/pgbouncer.key
-#  echo $CLIENT_TLS_KEY_FILE | tr ' ' '\n' | sed '1,4d' | head -n -4 >> ${PGBOUNCER_DIR}/pgbouncer.key
-#  echo -e "-----END RSA PRIVATE KEY-----"  >> ${PGBOUNCER_DIR}/pgbouncer.key
-##   echo "${CLIENT_TLS_KEY_FILE}" > ${PGBOUNCER_DIR}/pgbouncer.key
+if [ -n "${INTERNAL_TLS_CRT}" ] && [ -n "${INTERNAL_TLS_KEY}" ] && [ -n "${INTERNAL_CA_CRT}" ]
+then 
+   echo "${INTERNAL_TLS_CRT}" > ${PGBOUNCER_DIR}/pgbouncer.crt
+   echo "${INTERNAL_CA_CRT}" > ${PGBOUNCER_DIR}/pgbouncer_ca.crt
+   echo "${INTERNAL_TLS_KEY}" > ${PGBOUNCER_DIR}/pgbouncer.key
 
   sed -i '/^server_tls_sslmode =.*/c\
 client_tls_sslmode = require \
@@ -114,7 +90,7 @@ server_tls_key_file = '"${PGBOUNCER_DIR}"'/pgbouncer.key \
 server_tls_cert_file = '"${PGBOUNCER_DIR}"'/pgbouncer.crt \
 server_tls_ca_file = '"${PGBOUNCER_DIR}"'/pgbouncer_ca.crt' ${PGBOUNCER_DIR}/pgbouncer.ini
 
-#fi
+fi
 
 # If PGBOUNCER_STATS_USERNAME and PGBOUNCER_STATS_PASSWORD are
 # defined, enable SHOW commands from pgbouncer with those credentials.
